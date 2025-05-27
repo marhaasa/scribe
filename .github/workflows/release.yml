@@ -56,19 +56,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Calculate source archive SHA256
+      - name: Calculate wheel SHA256
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          # Wait a moment for GitHub to process the tag
-          sleep 5
+          # Wait a moment for PyPI to process the upload
+          sleep 30
           
-          # Download the auto-generated source archive
-          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/v${VERSION}.tar.gz"
-          curl -L -o source.tar.gz "$TARBALL_URL"
-          SHA256=$(sha256sum source.tar.gz | cut -d' ' -f1)
+          # Download the wheel from PyPI
+          WHEEL_URL="https://files.pythonhosted.org/packages/py3/s/scribe/scribe-${VERSION}-py3-none-any.whl"
+          
+          # Retry logic for PyPI availability
+          for i in {1..5}; do
+            if curl -L -f -o scribe.whl "$WHEEL_URL"; then
+              break
+            fi
+            echo "Attempt $i failed, retrying in 30 seconds..."
+            sleep 30
+          done
+          
+          SHA256=$(sha256sum scribe.whl | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
-          echo "Calculated SHA256: $SHA256"
+          echo "Calculated wheel SHA256: $SHA256"
 
   update-homebrew:
     needs: release
@@ -80,15 +89,22 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
       
-      - name: Calculate source SHA256
+      - name: Calculate wheel SHA256
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/v${VERSION}.tar.gz"
+          WHEEL_URL="https://files.pythonhosted.org/packages/py3/s/scribe/scribe-${VERSION}-py3-none-any.whl"
           
-          # Download and calculate SHA256
-          curl -L -o source.tar.gz "$TARBALL_URL"
-          SHA256=$(sha256sum source.tar.gz | cut -d' ' -f1)
+          # Retry logic for PyPI availability
+          for i in {1..5}; do
+            if curl -L -f -o scribe.whl "$WHEEL_URL"; then
+              break
+            fi
+            echo "Attempt $i failed, retrying in 30 seconds..."
+            sleep 30
+          done
+          
+          SHA256=$(sha256sum scribe.whl | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
       
       - name: Checkout homebrew tap
@@ -105,31 +121,20 @@ jobs:
           # Create the updated formula
           cat > Formula/scribe.rb << 'EOF'
           class Scribe < Formula
-          include Language::Python::Virtualenv
+            include Language::Python::Virtualenv
 
-          desc "CLI for managing notes in Neovim + Obsidian"
-          homepage "https://github.com/marhaasa/scribe"
-          url "https://github.com/marhaasa/scribe/archive/refs/tags/v__VERSION__.tar.gz"
-          sha256 "__SHA256__"
-          license "MIT"
-          head "https://github.com/marhaasa/scribe.git", branch: "main"
+            desc "CLI for managing notes in Neovim + Obsidian"
+            homepage "https://github.com/marhaasa/scribe"
+            url "https://files.pythonhosted.org/packages/py3/s/scribe/scribe-__VERSION__-py3-none-any.whl"
+            sha256 "__SHA256__"
+            license "MIT"
 
-          depends_on "python@3.12"
+            depends_on "python@3.12"
 
-          def install
-            # Create virtual environment
-            venv = virtualenv_create(libexec, "python3.12")
-    
-            # Upgrade pip for better wheel support
-            system libexec/"bin/pip", "install", "--upgrade", "pip"
-    
-            # Install the package and all dependencies using pip
-            # This uses pre-built wheels from PyPI which is much faster
-            system libexec/"bin/pip", "install", buildpath
-    
-            # Link the executable
-            bin.install_symlink libexec/"bin/scribe"
-          end
+            def install
+              virtualenv_install_with_resources
+            end
+
             test do
               # Test version command
               assert_match "scribe version #{version}", shell_output("#{bin}/scribe version")
