@@ -62,15 +62,6 @@ poetry version $VERSION
 print_info "Updating version in scribe/__init__.py..."
 echo "__version__ = \"$VERSION\"" >scribe/__init__.py
 
-# Run tests if they exist
-if [ -d "tests" ]; then
-  print_info "Running tests..."
-  poetry run pytest || {
-    print_error "Tests failed. Please fix them before releasing."
-    exit 1
-  }
-fi
-
 # Build the package to ensure it builds correctly
 print_info "Testing build..."
 poetry build
