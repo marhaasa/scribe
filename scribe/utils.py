@@ -1,6 +1,6 @@
 import subprocess
 from rich import print
-from notat_cli.config import EDITOR_COMMAND
+from scribe.config import EDITOR_COMMAND
 from datetime import datetime, timedelta
 
 
