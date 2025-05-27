@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "scribe"
+version = "0.1.0"
+description = "A CLI for managing Zettelkasten notes in Neovim + Obsidian"
+authors = ["Marius Høgli Aasarød"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+typer = {extras = ["all"], version = "^0.12.3"}
+
+[tool.poetry.scripts]
+scribe = "scribe.main:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
