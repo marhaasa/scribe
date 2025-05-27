@@ -82,26 +82,19 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
       
-      - name: Download release wheel
+      - name: Download source tarball
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          # Download the wheel from the GitHub release
-          gh release download "v$VERSION" --pattern "*.whl" --repo "${{ github.repository }}"
+          gh release download "v$VERSION" --pattern "*.tar.gz" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Calculate wheel SHA256
+      - name: Calculate tarball SHA256
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          WHEEL_FILE="scribe-${VERSION}-py3-none-any.whl"
-          
-          if [ ! -f "$WHEEL_FILE" ]; then
-            echo "Error: Wheel file $WHEEL_FILE not found"
-            exit 1
-          fi
-          
-          SHA256=$(sha256sum "$WHEEL_FILE" | cut -d' ' -f1)
+          TARBALL="scribe-${VERSION}.tar.gz"
+          SHA256=$(sha256sum "$TARBALL" | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
       
       - name: Checkout homebrew tap
@@ -122,19 +115,16 @@ jobs:
 
             desc "CLI for managing notes in Neovim + Obsidian"
             homepage "https://github.com/marhaasa/scribe"
-            url "https://github.com/marhaasa/scribe/releases/download/v__VERSION__/scribe-__VERSION__-py3-none-any.whl"
+            url "https://github.com/marhaasa/scribe/releases/download/v__VERSION__/scribe-__VERSION__.tar.gz"
             sha256 "__SHA256__"
             license "MIT"
 
             depends_on "python@3.12"
 
-            resource "typer" do
-              url "https://files.pythonhosted.org/packages/c5/58/a79003b91ac2c6890fc5d90145c662fd5771c6b1572e4c7b8d16d8e7d2a/typer-0.12.3.tar.gz"
-              sha256 "49e73131481d804288ef62598d97a1ceef3058905aa536a1134f90891ba35482"
-            end
-
             def install
-              virtualenv_install_with_resources
+              venv = virtualenv_create(libexec, "python3.12")
+              system libexec/"bin/pip", "install", buildpath
+              bin.install_symlink libexec/"bin/scribe"
             end
 
             test do
