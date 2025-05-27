@@ -1,6 +1,6 @@
 # Scribe
 
-A CLI for managing notes in Neovim + Obsidian.
+A CLI for managing notes in Neovim + Obsidian. Heavily inspired by [Zettelkasten CLI](https://github.com/mischavandenburg/zettelkasten-cli).
 
 ## Requirements
 
