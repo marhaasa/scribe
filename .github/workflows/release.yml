@@ -60,17 +60,17 @@ jobs:
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          # Use the locally built source distribution
-          WHEEL_FILE="dist/scribe-${VERSION}.tar.gz"
+          # Use the wheel file instead of source distribution
+          WHEEL_FILE="dist/scribe-${VERSION}-py3-none-any.whl"
           
           if [ ! -f "$WHEEL_FILE" ]; then
-            echo "Error: Source distribution file $WHEEL_FILE not found"
+            echo "Error: Wheel file $WHEEL_FILE not found"
             exit 1
           fi
           
           SHA256=$(sha256sum "$WHEEL_FILE" | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
-          echo "Calculated source distribution SHA256: $SHA256"
+          echo "Calculated wheel SHA256: $SHA256"
 
   update-homebrew:
     needs: release
@@ -82,11 +82,11 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
       
-      - name: Download release source distribution
+      - name: Download release wheel
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          # Download the source distribution from the GitHub release
-          gh release download "v$VERSION" --pattern "*.tar.gz" --repo "${{ github.repository }}"
+          # Download the wheel from the GitHub release
+          gh release download "v$VERSION" --pattern "*.whl" --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
@@ -94,10 +94,10 @@ jobs:
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          WHEEL_FILE="scribe-${VERSION}.tar.gz"
+          WHEEL_FILE="scribe-${VERSION}-py3-none-any.whl"
           
           if [ ! -f "$WHEEL_FILE" ]; then
-            echo "Error: Source distribution file $WHEEL_FILE not found"
+            echo "Error: Wheel file $WHEEL_FILE not found"
             exit 1
           fi
           
@@ -122,7 +122,7 @@ jobs:
 
             desc "CLI for managing notes in Neovim + Obsidian"
             homepage "https://github.com/marhaasa/scribe"
-            url "https://github.com/marhaasa/scribe/releases/download/v__VERSION__/scribe-__VERSION__.tar.gz"
+            url "https://github.com/marhaasa/scribe/releases/download/v__VERSION__/scribe-__VERSION__-py3-none-any.whl"
             sha256 "__SHA256__"
             license "MIT"
 
