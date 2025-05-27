@@ -132,7 +132,7 @@ jobs:
             def install
               venv = virtualenv_create(libexec, "python3.12")
               system "poetry", "config", "virtualenvs.create", "false"
-              system "poetry", "install", "--only=main", "--no-dev"
+              system "poetry", "install", "--only=main"
               bin.install_symlink libexec/"bin/scribe"
             end
 
