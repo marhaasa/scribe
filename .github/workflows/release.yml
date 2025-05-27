@@ -127,13 +127,10 @@ jobs:
             license "MIT"
 
             depends_on "python@3.12"
-            depends_on "poetry"
 
             def install
               venv = virtualenv_create(libexec, "python3.12")
-              system "poetry", "config", "virtualenvs.create", "false"
-              system "poetry", "install", "--only=main"
-              bin.install_symlink libexec/"bin/scribe"
+              venv.pip_install_and_link buildpath
             end
 
             test do
