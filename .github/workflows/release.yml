@@ -60,22 +60,15 @@ jobs:
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          # Wait a moment for PyPI to process the upload
-          sleep 30
+          # Use the locally built wheel
+          WHEEL_FILE="dist/scribe-${VERSION}-py3-none-any.whl"
           
-          # Download the wheel from PyPI
-          WHEEL_URL="https://files.pythonhosted.org/packages/py3/s/scribe/scribe-${VERSION}-py3-none-any.whl"
+          if [ ! -f "$WHEEL_FILE" ]; then
+            echo "Error: Wheel file $WHEEL_FILE not found"
+            exit 1
+          fi
           
-          # Retry logic for PyPI availability
-          for i in {1..5}; do
-            if curl -L -f -o scribe.whl "$WHEEL_URL"; then
-              break
-            fi
-            echo "Attempt $i failed, retrying in 30 seconds..."
-            sleep 30
-          done
-          
-          SHA256=$(sha256sum scribe.whl | cut -d' ' -f1)
+          SHA256=$(sha256sum "$WHEEL_FILE" | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
           echo "Calculated wheel SHA256: $SHA256"
 
@@ -89,22 +82,26 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
       
+      - name: Download release wheel
+        run: |
+          VERSION=${{ steps.extract_version.outputs.VERSION }}
+          # Download the wheel from the GitHub release
+          gh release download "v$VERSION" --pattern "*.whl" --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Calculate wheel SHA256
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          WHEEL_URL="https://files.pythonhosted.org/packages/py3/s/scribe/scribe-${VERSION}-py3-none-any.whl"
+          WHEEL_FILE="scribe-${VERSION}-py3-none-any.whl"
           
-          # Retry logic for PyPI availability
-          for i in {1..5}; do
-            if curl -L -f -o scribe.whl "$WHEEL_URL"; then
-              break
-            fi
-            echo "Attempt $i failed, retrying in 30 seconds..."
-            sleep 30
-          done
+          if [ ! -f "$WHEEL_FILE" ]; then
+            echo "Error: Wheel file $WHEEL_FILE not found"
+            exit 1
+          fi
           
-          SHA256=$(sha256sum scribe.whl | cut -d' ' -f1)
+          SHA256=$(sha256sum "$WHEEL_FILE" | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
       
       - name: Checkout homebrew tap
