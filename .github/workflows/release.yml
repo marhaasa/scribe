@@ -5,9 +5,14 @@ on:
     tags:
       - 'v*.*.*'  # Triggers on version tags like v0.1.0
 
+permissions:
+  contents: write  # Need write permission to create releases
+  
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Need write permission to create releases
     steps:
       - uses: actions/checkout@v4
       
@@ -34,6 +39,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          name: Release ${{ steps.extract_version.outputs.VERSION }}
           body: |
             ## Installation
             
