@@ -130,8 +130,7 @@ jobs:
 
             def install
               venv = virtualenv_create(libexec, "python3.12")
-              system libexec/"bin/pip", "install", buildpath
-              bin.install_symlink libexec/"bin/scribe"
+              venv.pip_install buildpath
             end
 
             test do
