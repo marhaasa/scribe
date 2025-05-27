@@ -1,6 +1,6 @@
 # Scribe
 
-A CLI for managing Zettelkasten notes in Neovim + Obsidian.
+A CLI for managing notes in Neovim + Obsidian.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ A CLI for managing Zettelkasten notes in Neovim + Obsidian.
 export NOTES=/path/to/your/notes
 
 # Install via homebrew (coming soon)
-brew tap yourusername/tap
+brew tap marhaasa/tools
 brew install scribe
 ```
 
