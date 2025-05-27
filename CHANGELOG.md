@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.24 - 2025-05-27
 
+## 0.1.25 - 2025-05-27
+
+### Fixed
+- Removed unreleased header in changelog
+
+
 ### Fixed
 - Added changelog
 - Fixed input for changelog in release script
