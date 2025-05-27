@@ -82,19 +82,15 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
       
-      - name: Download source tarball
-        run: |
-          VERSION=${{ steps.extract_version.outputs.VERSION }}
-          gh release download "v$VERSION" --pattern "*.tar.gz" --repo "${{ github.repository }}"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Calculate tarball SHA256
+      - name: Calculate source SHA256
         id: calculate_sha
         run: |
           VERSION=${{ steps.extract_version.outputs.VERSION }}
-          TARBALL="scribe-${VERSION}.tar.gz"
-          SHA256=$(sha256sum "$TARBALL" | cut -d' ' -f1)
+          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/v${VERSION}.tar.gz"
+          
+          # Download and calculate SHA256
+          curl -L -o source.tar.gz "$TARBALL_URL"
+          SHA256=$(sha256sum source.tar.gz | cut -d' ' -f1)
           echo "SHA256=$SHA256" >> $GITHUB_OUTPUT
       
       - name: Checkout homebrew tap
@@ -115,16 +111,19 @@ jobs:
 
             desc "CLI for managing notes in Neovim + Obsidian"
             homepage "https://github.com/marhaasa/scribe"
-            url "https://github.com/marhaasa/scribe/releases/download/v__VERSION__/scribe-__VERSION__.tar.gz"
+            url "https://github.com/marhaasa/scribe/archive/refs/tags/v__VERSION__.tar.gz"
             sha256 "__SHA256__"
             license "MIT"
 
             depends_on "python@3.12"
 
+            resource "typer" do
+              url "https://files.pythonhosted.org/packages/source/t/typer/typer-0.12.3.tar.gz"
+              sha256 "49e73131481d804288ef62598d97a1ceef3058905aa536a1134f90891ba35482"
+            end
+
             def install
-              venv = virtualenv_create(libexec, "python3.12")
-              system libexec/"bin/pip", "install", buildpath
-              bin.install_symlink libexec/"bin/scribe"
+              virtualenv_install_with_resources
             end
 
             test do
