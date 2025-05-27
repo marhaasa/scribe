@@ -103,7 +103,7 @@ if [ -n "$CHANGELOG_ENTRIES" ]; then
     SECTION="### Changed"
   fi
   
-  # Create temporary file with new entry
+  # Create temporary file with complete new entry
   cat > /tmp/changelog_entry << EOF
 
 ## $NEW_VERSION - $CURRENT_DATE
@@ -112,10 +112,10 @@ $SECTION
 EOF
   echo -e "$CHANGELOG_ENTRIES" >> /tmp/changelog_entry
   
-  # Insert the new entry after line 8 in CHANGELOG.md
-  head -n 8 CHANGELOG.md > /tmp/changelog_new
+  # Insert the new entry after line 7 in CHANGELOG.md (after the header section)
+  head -n 7 CHANGELOG.md > /tmp/changelog_new
   cat /tmp/changelog_entry >> /tmp/changelog_new
-  tail -n +9 CHANGELOG.md >> /tmp/changelog_new
+  tail -n +8 CHANGELOG.md >> /tmp/changelog_new
   mv /tmp/changelog_new CHANGELOG.md
   
   # Clean up temp files
