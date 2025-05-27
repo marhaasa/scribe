@@ -20,21 +20,22 @@ print_warning() {
   echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Check if version argument is provided
+# Check if version type argument is provided
 if [ -z "$1" ]; then
-  print_error "Please provide a version number (e.g., ./release.sh 0.2.0)"
+  print_error "Please provide a version type: patch, minor, or major"
+  print_info "Usage: ./release.sh [patch|minor|major]"
   exit 1
 fi
 
-VERSION=$1
+VERSION_TYPE=$1
 
-# Validate version format
-if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  print_error "Version must be in format X.Y.Z (e.g., 0.2.0)"
+# Validate version type
+if [[ ! "$VERSION_TYPE" =~ ^(patch|minor|major)$ ]]; then
+  print_error "Version type must be one of: patch, minor, major"
   exit 1
 fi
 
-print_info "Preparing to release version $VERSION"
+print_info "Preparing to release $VERSION_TYPE version"
 
 # Check if we're on main branch
 CURRENT_BRANCH=$(git branch --show-current)
@@ -56,11 +57,14 @@ git pull origin main
 
 # Update version in pyproject.toml
 print_info "Updating version in pyproject.toml..."
-poetry version $VERSION
+poetry version $VERSION_TYPE
+
+# Get the new version for display and further use
+NEW_VERSION=$(poetry version --short)
 
 # Update version in __init__.py
 print_info "Updating version in scribe/__init__.py..."
-echo "__version__ = \"$VERSION\"" >scribe/__init__.py
+echo "__version__ = \"$NEW_VERSION\"" >scribe/__init__.py
 
 # Build the package to ensure it builds correctly
 print_info "Testing build..."
@@ -69,21 +73,80 @@ poetry build
 # Clean up test build
 rm -rf dist/
 
+# Update CHANGELOG.md
+print_info "Updating CHANGELOG..."
+echo ""
+echo "What changes should be included in this release?"
+echo "Enter changelog entries (one per line). Type 'done' when finished:"
+echo ""
+
+# Read changelog entries from user
+CHANGELOG_ENTRIES=""
+while true; do
+  read -r line
+  if [ "$line" = "done" ] || [ -z "$line" ]; then
+    break
+  fi
+  CHANGELOG_ENTRIES="${CHANGELOG_ENTRIES}- ${line}\n"
+done
+
+if [ -n "$CHANGELOG_ENTRIES" ]; then
+  # Get current date
+  CURRENT_DATE=$(date +"%Y-%m-%d")
+  
+  # Capitalize version type
+  if [ "$VERSION_TYPE" = "patch" ]; then
+    SECTION="### Fixed"
+  elif [ "$VERSION_TYPE" = "minor" ]; then
+    SECTION="### Added"
+  elif [ "$VERSION_TYPE" = "major" ]; then
+    SECTION="### Changed"
+  fi
+  
+  # Create temporary file with new entry
+  cat > /tmp/changelog_entry << EOF
+
+## $NEW_VERSION - $CURRENT_DATE
+
+$SECTION
+EOF
+  echo -e "$CHANGELOG_ENTRIES" >> /tmp/changelog_entry
+  
+  # Insert the new entry after line 8 in CHANGELOG.md
+  head -n 8 CHANGELOG.md > /tmp/changelog_new
+  cat /tmp/changelog_entry >> /tmp/changelog_new
+  tail -n +9 CHANGELOG.md >> /tmp/changelog_new
+  mv /tmp/changelog_new CHANGELOG.md
+  
+  # Clean up temp files
+  rm -f /tmp/changelog_entry
+  
+  print_info "CHANGELOG.md updated"
+else
+  print_warning "No changelog entries provided, skipping CHANGELOG update"
+fi
+
 # Commit version changes
 print_info "Committing version changes..."
-git add pyproject.toml scribe/__init__.py
-git commit -m "Bump version to $VERSION"
+if [ -n "$CHANGELOG_ENTRIES" ]; then
+  git add pyproject.toml scribe/__init__.py CHANGELOG.md
+else
+  git add pyproject.toml scribe/__init__.py
+fi
+git commit -m "Bump version to $NEW_VERSION"
 
 # Push changes
 print_info "Pushing changes to origin..."
 git push origin main
 
 # Create and push tag
-print_info "Creating and pushing tag v$VERSION..."
-git tag -a "v$VERSION" -m "Release version $VERSION"
-git push origin "v$VERSION"
+print_info "Creating and pushing tag v$NEW_VERSION..."
+git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+git push origin "v$NEW_VERSION"
 
 print_info "🎉 Release process completed!"
+print_info "Released version: v$NEW_VERSION"
+print_info ""
 print_info "The GitHub Action will now:"
 print_info "  1. Create a GitHub release"
 print_info "  2. Build and upload Python packages"
