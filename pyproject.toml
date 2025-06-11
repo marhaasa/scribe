@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scribe"
-version = "0.1.26"
+version = "0.1.27"
 description = "A CLI for managing notes in Neovim + Obsidian. Heavily inspired by https://github.com/mischavandenburg/zettelkasten-cli."
 authors = ["Marius Høgli Aasarød"]
 readme = "README.md"

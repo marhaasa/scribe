@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## 0.1.27 - 2025-06-11
+
+### Fixed
+- Added meeting notes functionality
+- Added meeting notes templates
+- Consolidated opening note function
+- Added better error messages and handling
+
+
 ## 0.1.26 - 2025-05-27
 
 ### Fixed
