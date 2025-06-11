@@ -2,6 +2,7 @@ import typer
 
 from scribe import new_note
 from scribe import daily_note
+from scribe import meeting_note
 from scribe import __version__
 
 from typing import Optional
@@ -26,6 +27,29 @@ def new(
 def daily():
     """Open today's note. Creates a new one if it doesn't exist."""
     daily_note.open_daily_note()
+
+
+@app.command()
+def meeting(
+    title: Annotated[Optional[str], typer.Argument()] = None,
+    template: Annotated[str, typer.Option("--template", "-t")] = "general",
+    list_templates: Annotated[bool, typer.Option("--list", "-l")] = False,
+) -> None:
+    """Create a meeting note with the specified template."""
+    if list_templates:
+        meeting_note.list_available_templates()
+        return
+    
+    # Validate template exists
+    if template not in meeting_note.MEETING_TEMPLATES:
+        typer.echo(f"Invalid template: '{template}' is not a valid meeting template.", err=True)
+        typer.echo("Available templates:", err=True)
+        for key, tmpl in meeting_note.MEETING_TEMPLATES.items():
+            typer.echo(f"  {key}: {tmpl['name']}", err=True)
+        typer.echo("Use 'scribe meeting --list' for more details.", err=True)
+        raise typer.Exit(code=1)
+    
+    meeting_note.open_meeting_note(title, template)
 
 
 @app.command()

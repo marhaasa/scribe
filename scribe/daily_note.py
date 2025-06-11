@@ -1,7 +1,6 @@
 import typer
 from rich import print
-import subprocess
-from scribe.utils import format_date
+from scribe.utils import format_date, open_in_editor
 from scribe.config import NOTES_ROOT
 
 app = typer.Typer()
@@ -44,12 +43,19 @@ def create_daily_note() -> None:
     """
     try:
         if not TODAY_NOTE_PATH.exists():
-            print(f"Creating new daily note: {TODAY_NOTE_PATH}")
+            # Ensure parent directory exists
+            DAILY_NOTES_PATH.mkdir(parents=True, exist_ok=True)
             TODAY_NOTE_PATH.write_text(format_daily_note_content())
+            print(f"Created daily note: {TODAY_NOTE_PATH}")
         else:
             print(f"Daily note already exists: {TODAY_NOTE_PATH}")
-    except IOError as e:
-        print(f"An error occurred when creating daily note: {e}")
+    except PermissionError:
+        print(f"Error: Permission denied when creating daily note at {TODAY_NOTE_PATH}")
+        print("Check that you have write permissions to your notes directory.")
+    except OSError as e:
+        print(f"Error: Could not create daily note at {TODAY_NOTE_PATH}")
+        print(f"System error: {e}")
+        print("Check that your NOTES environment variable points to a valid directory.")
 
 
 def append_daily_note(note_title: str) -> None:
@@ -63,22 +69,19 @@ def append_daily_note(note_title: str) -> None:
     try:
         with TODAY_NOTE_PATH.open(mode="a") as note:
             note.write(f"\n[[{note_title}]]")
-    except IOError as e:
-        print(f"A problem occurred when adding note to daily note: {e}")
+    except PermissionError:
+        print(f"Error: Permission denied when updating daily note at {TODAY_NOTE_PATH}")
+        print("Check that you have write permissions to your notes directory.")
+    except OSError as e:
+        print(f"Error: Could not update daily note at {TODAY_NOTE_PATH}")
+        print(f"System error: {e}")
+        print("The daily note file may be locked or corrupted.")
 
 
 def open_daily_note() -> None:
     """
-    Opens today's daily note in Neovim.
+    Opens today's daily note in the configured editor.
     Creates the note if it doesn't exist before opening.
     """
-
-    # TODO: use the function from utils
     create_daily_note()
-    try:
-        subprocess.run(
-            ["nvim", "+ normal Gzzo", str(TODAY_NOTE_PATH), "-c", ":NoNeckPain"],
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"A problem occurred when opening daily note in Neovim: {e}")
+    open_in_editor(str(TODAY_NOTE_PATH), use_noneckpain=True)

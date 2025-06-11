@@ -44,6 +44,7 @@ $NOTES/
 **Commands**:
 
 - `daily`: Open daily note or create if it doesn't exist.
+- `meeting`: Create a meeting note with the specified template.
 - `new`: Create a new note with the provided title.
 
 ## `daily`
@@ -59,6 +60,46 @@ daily [OPTIONS]
 **Options**:
 
 - `--help`: Show this message and exit.
+
+## `meeting`
+
+Create a meeting note with the specified template. Supports multiple meeting types with pre-defined templates.
+
+**Usage**:
+
+```console
+meeting [OPTIONS] [TITLE]
+```
+
+**Arguments**:
+
+- `[TITLE]`: Optional title for the meeting note
+
+**Options**:
+
+- `-t, --template TEXT`: Meeting template to use (default: general)
+- `-l, --list`: List all available meeting templates
+- `--help`: Show this message and exit.
+
+**Available Templates**:
+
+- `general`: General purpose meeting template
+- `standup`: Daily standup meeting template  
+- `1on1`: One-on-one meeting template
+- `retrospective`: Sprint retrospective template
+
+**Examples**:
+
+```console
+# Create a general meeting note
+scribe meeting "Project Planning"
+
+# Create a standup meeting note
+scribe meeting --template standup
+
+# List available templates
+scribe meeting --list
+```
 
 ## `new`
 

@@ -19,13 +19,24 @@ def create_new_note(title, vim_mode) -> None:
         if not vim_mode:
             open_in_editor(str(file_path))
     except ValueError as e:
-        typer.echo(f"Error: {str(e)}", err=True)
+        typer.echo(f"Invalid input: {str(e)}", err=True)
+        typer.echo("Use 'scribe new --help' for usage information.", err=True)
         raise typer.Exit(code=1)
     except FileExistsError as e:
-        typer.echo(f"Error: {str(e)}", err=True)
+        typer.echo(f"File conflict: {str(e)}", err=True)
+        typer.echo("Try a different title or check your notes directory.", err=True)
+        raise typer.Exit(code=1)
+    except PermissionError:
+        typer.echo("Permission denied: Cannot create note in the specified directory.", err=True)
+        typer.echo("Check that you have write permissions to your notes directory.", err=True)
+        raise typer.Exit(code=1)
+    except OSError as e:
+        typer.echo(f"System error: Could not create note. {str(e)}", err=True)
+        typer.echo("Check that your NOTES environment variable points to a valid directory.", err=True)
         raise typer.Exit(code=1)
     except Exception as e:
-        typer.echo(f"An unexpected error occurred: {str(e)}", err=True)
+        typer.echo(f"Unexpected error: {str(e)}", err=True)
+        typer.echo("Please report this issue if it persists.", err=True)
         raise typer.Exit(code=1)
 
 
@@ -52,14 +63,28 @@ def format_path(note_title: str) -> Path:
 def create_file(file_path: Path, note_title: str) -> None:
     """Create a new note file and open it in the editor."""
     if file_path.exists():
-        raise FileExistsError(f"File already exists: {file_path}")
-    create_note_file(file_path, note_title)
-    print(f"New note created: {file_path}")
+        raise FileExistsError(f"A note with this title already exists: {file_path.name}")
+    
+    try:
+        # Ensure parent directory exists
+        INBOX_PATH.mkdir(parents=True, exist_ok=True)
+        create_note_file(file_path, note_title)
+        print(f"Created note: {file_path.name}")
+    except PermissionError:
+        raise PermissionError(f"Cannot create note at {file_path}")
+    except OSError as e:
+        raise OSError(f"Failed to create note: {e}")
 
 
 def create_note_file(file_path: Path, note_title: str) -> None:
     """
-    Create a new note file with the given title, append the title tot he daily note, and add a H1 Markdown heading.
+    Create a new note file with the given title, append the title to the daily note, and add a H1 Markdown heading.
     """
-    append_daily_note(note_title)
-    file_path.write_text(f"# {note_title}\n\n")
+    try:
+        append_daily_note(note_title)
+        file_path.write_text(f"# {note_title}\n\n")
+    except Exception as e:
+        # Clean up partial file if daily note append failed
+        if file_path.exists():
+            file_path.unlink()
+        raise
