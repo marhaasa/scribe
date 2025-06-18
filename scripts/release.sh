@@ -93,7 +93,7 @@ done
 if [ -n "$CHANGELOG_ENTRIES" ]; then
   # Get current date
   CURRENT_DATE=$(date +"%Y-%m-%d")
-  
+
   # Capitalize version type
   if [ "$VERSION_TYPE" = "patch" ]; then
     SECTION="### Fixed"
@@ -102,25 +102,25 @@ if [ -n "$CHANGELOG_ENTRIES" ]; then
   elif [ "$VERSION_TYPE" = "major" ]; then
     SECTION="### Changed"
   fi
-  
+
   # Create temporary file with complete new entry
-  cat > /tmp/changelog_entry << EOF
+  cat >/tmp/changelog_entry <<EOF
 
 ## $NEW_VERSION - $CURRENT_DATE
 
 $SECTION
 EOF
-  echo -e "$CHANGELOG_ENTRIES" >> /tmp/changelog_entry
-  
+  echo -e "$CHANGELOG_ENTRIES" >>/tmp/changelog_entry
+
   # Insert the new entry after line 7 in CHANGELOG.md (after the header section)
-  head -n 7 CHANGELOG.md > /tmp/changelog_new
-  cat /tmp/changelog_entry >> /tmp/changelog_new
-  tail -n +8 CHANGELOG.md >> /tmp/changelog_new
+  head -n 7 CHANGELOG.md >/tmp/changelog_new
+  cat /tmp/changelog_entry >>/tmp/changelog_new
+  tail -n +8 CHANGELOG.md >>/tmp/changelog_new
   mv /tmp/changelog_new CHANGELOG.md
-  
+
   # Clean up temp files
   rm -f /tmp/changelog_entry
-  
+
   print_info "CHANGELOG.md updated"
 else
   print_warning "No changelog entries provided, skipping CHANGELOG update"
@@ -157,4 +157,4 @@ print_info "https://github.com/marhaasa/scribe/actions"
 print_info ""
 print_info "Once complete, users can install with:"
 print_info "  brew tap marhaasa/tools"
-print_info "  brew install scribe"
+print_info "  brew install marhaasa/tools/scribe"
