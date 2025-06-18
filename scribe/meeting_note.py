@@ -3,7 +3,7 @@ from rich import print
 from datetime import datetime
 from pathlib import Path
 from scribe.utils import format_date, open_in_editor
-from scribe.config import NOTES_ROOT
+from scribe.config import NOTES_ROOT, LANGUAGE
 from scribe.daily_note import append_daily_note
 from typing import Optional
 
@@ -13,9 +13,10 @@ TODAY = format_date()
 MEETING_NOTES_PATH = NOTES_ROOT / "0-inbox"
 
 MEETING_TEMPLATES = {
-    "general": {
-        "name": "General Meeting",
-        "template": """## Participants
+    "en": {
+        "general": {
+            "name": "General Meeting",
+            "template": """## Participants
 
 - [ ] 
 - [ ] 
@@ -35,10 +36,10 @@ MEETING_TEMPLATES = {
 ## Next Steps
 
 """
-    },
-    "standup": {
-        "name": "Daily Standup",
-        "template": """## Team Members
+        },
+        "standup": {
+            "name": "Daily Standup",
+            "template": """## Team Members
 
 - [ ] 
 - [ ] 
@@ -53,10 +54,10 @@ MEETING_TEMPLATES = {
 ## Notes
 
 """
-    },
-    "1on1": {
-        "name": "1-on-1 Meeting",
-        "template": """## Participants
+        },
+        "1on1": {
+            "name": "1-on-1 Meeting",
+            "template": """## Participants
 
 - [ ] 
 - [ ] 
@@ -77,10 +78,10 @@ MEETING_TEMPLATES = {
 - [ ] 
 
 """
-    },
-    "retrospective": {
-        "name": "Sprint Retrospective",
-        "template": """## What went well?
+        },
+        "retrospective": {
+            "name": "Sprint Retrospective",
+            "template": """## What went well?
 
 - 
 
@@ -98,6 +99,95 @@ MEETING_TEMPLATES = {
 - [ ] 
 
 """
+        }
+    },
+    "no": {
+        "general": {
+            "name": "Møte",
+            "template": """## Deltakere
+
+- [ ] 
+- [ ] 
+- [ ] 
+
+## Agenda
+
+- 
+
+## Notater
+
+## Oppgaver
+
+- [ ] 
+- [ ] 
+
+## Neste Steg
+
+"""
+        },
+        "standup": {
+            "name": "Daglig Standup",
+            "template": """## Gruppemedlemmer
+
+- [ ] 
+- [ ] 
+- [ ] 
+
+## Gårsdagens fremgang
+
+## Dagens plan
+
+## Hindringer
+
+## Notater
+
+"""
+        },
+        "1on1": {
+            "name": "1-til-1 Møte",
+            "template": """## Deltakere
+
+- [ ] 
+- [ ] 
+
+## Hvordan har du det?
+
+## Nåværende prosjekter
+
+## Utfordringer og behov
+
+## Karriereutvikling
+
+## Tilbakemelding
+
+## Oppgaver
+
+- [ ] 
+- [ ] 
+
+"""
+        },
+        "retrospective": {
+            "name": "Sprint Retrospektiv",
+            "template": """## Hva gikk bra?
+
+- 
+
+## Hva kan forbedres?
+
+- 
+
+## Hva skal vi prøve neste gang?
+
+- 
+
+## Oppgaver
+
+- [ ] 
+- [ ] 
+
+"""
+        }
     }
 }
 
@@ -112,7 +202,8 @@ def format_meeting_note_content(template_key: str = "general") -> str:
     Returns:
         str: Formatted content for the meeting note.
     """
-    template = MEETING_TEMPLATES.get(template_key, MEETING_TEMPLATES["general"])
+    lang_templates = MEETING_TEMPLATES.get(LANGUAGE, MEETING_TEMPLATES["en"])
+    template = lang_templates.get(template_key, lang_templates["general"])
     return template["template"]
 
 
@@ -133,7 +224,8 @@ def generate_meeting_filename(title: Optional[str] = None, template_key: str = "
         clean_title = clean_title.replace(' ', '-')
         return f"{timestamp}-{clean_title}.md"
     else:
-        template_name = MEETING_TEMPLATES[template_key]["name"].replace(' ', '-').lower()
+        lang_templates = MEETING_TEMPLATES.get(LANGUAGE, MEETING_TEMPLATES["en"])
+        template_name = lang_templates[template_key]["name"].replace(' ', '-').lower()
         return f"{timestamp}-{template_name}.md"
 
 
@@ -156,7 +248,8 @@ def create_meeting_note(title: Optional[str] = None, template_key: str = "genera
             # Ensure parent directory exists
             MEETING_NOTES_PATH.mkdir(parents=True, exist_ok=True)
             
-            note_title = title or f"{MEETING_TEMPLATES[template_key]['name']} - {TODAY}"
+            lang_templates = MEETING_TEMPLATES.get(LANGUAGE, MEETING_TEMPLATES["en"])
+            note_title = title or f"{lang_templates[template_key]['name']} - {TODAY}"
             content = f"# {note_title}\n\n{format_meeting_note_content(template_key)}"
             meeting_note_path.write_text(content)
             
@@ -181,7 +274,8 @@ def create_meeting_note(title: Optional[str] = None, template_key: str = "genera
 def list_available_templates() -> None:
     """List all available meeting templates."""
     print("Available meeting templates:")
-    for key, template in MEETING_TEMPLATES.items():
+    lang_templates = MEETING_TEMPLATES.get(LANGUAGE, MEETING_TEMPLATES["en"])
+    for key, template in lang_templates.items():
         print(f"  {key}: {template['name']}")
 
 

@@ -3,6 +3,7 @@ import typer
 from scribe import new_note
 from scribe import daily_note
 from scribe import meeting_note
+from scribe.config import LANGUAGE
 from scribe import __version__
 
 from typing import Optional
@@ -41,10 +42,11 @@ def meeting(
         return
     
     # Validate template exists
-    if template not in meeting_note.MEETING_TEMPLATES:
+    lang_templates = meeting_note.MEETING_TEMPLATES.get(LANGUAGE, meeting_note.MEETING_TEMPLATES["en"])
+    if template not in lang_templates:
         typer.echo(f"Invalid template: '{template}' is not a valid meeting template.", err=True)
         typer.echo("Available templates:", err=True)
-        for key, tmpl in meeting_note.MEETING_TEMPLATES.items():
+        for key, tmpl in lang_templates.items():
             typer.echo(f"  {key}: {tmpl['name']}", err=True)
         typer.echo("Use 'scribe meeting --list' for more details.", err=True)
         raise typer.Exit(code=1)

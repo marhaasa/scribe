@@ -33,3 +33,7 @@ PROMPT_TITLE = "Enter note title"
 
 # Commands
 EDITOR_COMMAND = "nvim"
+
+# Language settings
+DEFAULT_LANGUAGE = "en"
+LANGUAGE = os.environ.get("SCRIBE_LANG", DEFAULT_LANGUAGE)

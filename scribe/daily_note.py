@@ -1,7 +1,7 @@
 import typer
 from rich import print
 from scribe.utils import format_date, open_in_editor
-from scribe.config import NOTES_ROOT
+from scribe.config import NOTES_ROOT, LANGUAGE
 
 app = typer.Typer()
 
@@ -12,6 +12,7 @@ DAILY_NOTES_PATH = NOTES_ROOT / "periodic-notes" / "daily-notes"
 TODAY_NOTE_PATH = DAILY_NOTES_PATH / f"{TODAY}.md"
 
 
+
 def format_daily_note_content() -> str:
     """
     Creates the daily note template content.
@@ -20,7 +21,23 @@ def format_daily_note_content() -> str:
         str: Formatted content for the daily note.
     """
     # TODO: Consider moving this template to a separate config file
-    return f"""
+    if LANGUAGE == "no":
+        return f"""
+[[{YESTERDAY}]] - [[{TOMORROW}]]
+
+## Daglige rutiner
+
+- [ ] Drikke vann
+- [ ] Gå med hunden
+- [ ] Trene
+- [ ] Lese
+- [ ] Rydde opp
+
+## Dagbok
+
+"""
+    else:
+        return f"""
 [[{YESTERDAY}]] - [[{TOMORROW}]]
 
 ## Daily rituals

@@ -8,11 +8,24 @@ A CLI for managing notes in Neovim + Obsidian. Heavily inspired by [Zettelkasten
 - Neovim with NoNeckPain plugin (optional but recommended)
 - NOTES environment variable set to your notes directory
 
+## Configuration
+
+**Required Environment Variables:**
+- `NOTES`: Path to your notes directory
+
+**Optional Environment Variables:**
+- `SCRIBE_LANG`: Language for templates (default: `en`)
+  - `en`: English templates
+  - `no`: Norwegian templates
+
 ## Installation
 
 ```bash
 # Set up your notes directory
 export NOTES=/path/to/your/notes
+
+# Optional: Set language preference (add to ~/.zshrc or ~/.bashrc for persistence)
+export SCRIBE_LANG=no  # For Norwegian templates, or 'en' for English (default)
 
 # Install via homebrew (coming soon)
 brew tap marhaasa/tools
@@ -88,6 +101,11 @@ meeting [OPTIONS] [TITLE]
 - `1on1`: One-on-one meeting template
 - `retrospective`: Sprint retrospective template
 
+**Language Support**:
+Templates are available in multiple languages based on the `SCRIBE_LANG` environment variable:
+- English (`en`): Default templates
+- Norwegian (`no`): Translated templates with Norwegian section headers
+
 **Examples**:
 
 ```console
@@ -99,6 +117,10 @@ scribe meeting --template standup
 
 # List available templates
 scribe meeting --list
+
+# Use Norwegian templates
+export SCRIBE_LANG=no
+scribe meeting "Prosjektplanlegging"  # Creates Norwegian template
 ```
 
 ## `new`
