@@ -16,7 +16,7 @@ export NOTES=/path/to/your/notes
 
 # Install via homebrew (coming soon)
 brew tap marhaasa/tools
-brew install scribe
+brew install marhaasa/tools/scribe
 ```
 
 ## Setup
