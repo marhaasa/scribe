@@ -25,9 +25,14 @@ def new(
 
 
 @app.command()
-def daily():
+def daily(
+    no_edit: Annotated[bool, typer.Option("--no-edit", help="Create daily note without opening editor")] = False,
+):
     """Open today's note. Creates a new one if it doesn't exist."""
-    daily_note.open_daily_note()
+    if no_edit:
+        daily_note.create_daily_note()
+    else:
+        daily_note.open_daily_note()
 
 
 @app.command()
