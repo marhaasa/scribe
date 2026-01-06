@@ -162,8 +162,8 @@ class Scribe < Formula
   end
 
   test do
-    # Test version command
-    assert_match "scribe version #{version}", shell_output("#{bin}/scribe version")
+    # Test version flag
+    assert_match "scribe version #{version}", shell_output("#{bin}/scribe --version")
 
     # Test help command
     assert_match "A CLI for managing notes", shell_output("#{bin}/scribe --help")

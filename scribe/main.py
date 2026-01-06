@@ -13,6 +13,19 @@ from typing_extensions import Annotated
 app = typer.Typer()
 
 
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"scribe version {__version__}")
+        raise typer.Exit()
+
+
+@app.callback(invoke_without_command=True)
+def main(
+    version: Annotated[bool, typer.Option("--version", "-V", callback=version_callback, is_eager=True, help="Show version and exit")] = False,
+):
+    pass
+
+
 @app.command()
 def new(
     title: Annotated[Optional[str], typer.Argument()] = None,
@@ -59,7 +72,3 @@ def meeting(
     meeting_note.open_meeting_note(title, template)
 
 
-@app.command()
-def version():
-    """Show the version of the CLI."""
-    typer.echo(f"scribe version {__version__}")
