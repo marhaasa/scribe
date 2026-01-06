@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## 0.1.31 - 2026-01-06
+
+### Fixed
+- Fixed syntax errors introduced when changing from tarballs to wheels
+
+
 ## 0.1.30 - 2026-01-06
 
 ### Fixed
