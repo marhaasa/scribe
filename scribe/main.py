@@ -9,6 +9,8 @@ from scribe import __version__
 from typing import Optional
 from typing_extensions import Annotated
 
+List = list
+
 
 app = typer.Typer()
 
@@ -52,13 +54,15 @@ def daily(
 def meeting(
     title: Annotated[Optional[str], typer.Argument()] = None,
     template: Annotated[str, typer.Option("--template", "-t")] = "general",
+    members: Annotated[Optional[List[str]], typer.Option("--member", "-m", help="Add a participant (repeatable)")] = None,
+    group: Annotated[Optional[str], typer.Option("--group", "-g", help="Use a named group from $NOTES/.scribe/groups.toml")] = None,
     list_templates: Annotated[bool, typer.Option("--list", "-l")] = False,
 ) -> None:
     """Create a meeting note with the specified template."""
     if list_templates:
         meeting_note.list_available_templates()
         return
-    
+
     # Validate template exists
     lang_templates = meeting_note.MEETING_TEMPLATES.get(LANGUAGE, meeting_note.MEETING_TEMPLATES["en"])
     if template not in lang_templates:
@@ -68,7 +72,14 @@ def meeting(
             typer.echo(f"  {key}: {tmpl['name']}", err=True)
         typer.echo("Use 'scribe meeting --list' for more details.", err=True)
         raise typer.Exit(code=1)
-    
-    meeting_note.open_meeting_note(title, template)
+
+    # Resolve members from --member and/or --group
+    resolved_members: list[str] = []
+    if group:
+        resolved_members.extend(meeting_note.load_group(group))
+    if members:
+        resolved_members.extend(members)
+
+    meeting_note.open_meeting_note(title, template, resolved_members or None)
 
 

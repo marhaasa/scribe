@@ -37,3 +37,6 @@ EDITOR_COMMAND = "nvim"
 # Language settings
 DEFAULT_LANGUAGE = "en"
 LANGUAGE = os.environ.get("SCRIBE_LANG", DEFAULT_LANGUAGE)
+
+# Groups config
+GROUPS_FILE = NOTES_ROOT / ".scribe" / "groups.toml"
