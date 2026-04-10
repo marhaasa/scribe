@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.2.0 - 2026-04-10
 
 ### Added
-- Added options to either add members for meetings as you create notes or by calli[A
+- Added options to either add members for meetings as you create notes or by calling groups from config file: .scribe/groups.toml
 
 
 ## 0.1.31 - 2026-01-06
